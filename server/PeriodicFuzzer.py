@@ -14,6 +14,8 @@ class PeriodiFuzzerError(Exception):
 
 class PeriodicFuzzer():
     def __init__(self, **kwargs):
+        if self.__supportedFuzzBeckend(kwargs['fuzzBeckend']) == False:
+            raise PeriodiFuzzerError(f"unsuported fuzzing beckend: {kwargs['fuzzBeckend']}")
         self._flags = copy.deepcopy(kwargs)
         self._fuzzing_in_process = False
         self._fuzzer_list = []
@@ -23,6 +25,13 @@ class PeriodicFuzzer():
 
     def __str__(self):
         return str(self._flags)
+
+    @staticmethod
+    def __supportedFuzzBeckend(fuzzBeckend):
+        if fuzzBeckend == 'AFL':
+            return True
+        else:
+            return False
 
     def __clone(self):
         pass
@@ -46,30 +55,19 @@ class PeriodicFuzzer():
         logging.log(logging.INFO, f"stopping fuzzing")
         self._fuzzing_in_process = False
 
-    @staticmethod
-    def supportedFuzzBeckend(fuzzBeckend):
-        if fuzzBeckend == 'AFL':
-            return True
-
-        return False
-
     def start(self):
         logging.log(logging.INFO, f"staring fuzzing")
-        try:
-            if self.__class__.supportedFuzzBeckend(self._flags['fuzzBeckend']) == False:
-                raise PeriodiFuzzerError(f"unsuported fuzzing beckend: {self._flags['fuzzBeckend']}")
 
-            repeating_timer = th.Event()
-            while True:
-                logging.log(logging.INFO, datetime.datetime.now())
-                is_updated = self.__checkUpdate()
-                if is_updated and self._fuzzing_in_process:
-                    self.__stopFuzzing()
-                    self.__update()
+        repeating_timer = th.Event()
+        while True:
+            logging.log(logging.INFO, datetime.datetime.now())
+            is_updated = self.__checkUpdate()
+            if is_updated and self._fuzzing_in_process:
+                self.__stopFuzzing()
+                self.__update()
+            self.__build()
+            self.__fuzz()
+            repeating_timer.wait(self._flags['updateInterval'])
 
-                self.__build()
-                self.__fuzz()
-                repeating_timer.wait(self._flags['updateInterval'])
-
-        except KeyboardInterrupt:
-            self.__stopFuzzing()
+    def stop(self):
+        self.__stopFuzzing()
