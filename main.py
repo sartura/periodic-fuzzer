@@ -10,7 +10,7 @@ if __name__ == '__main__':
     logging.basicConfig(stream=sys.stdout, level=logging.DEBUG)
 
     if len(sys.argv) != 2:
-        logging.log(logging.ERROR, f'usage: {sys.argv[0]} JSON_config_file')
+        logging.log(logging.ERROR, f"usage: {sys.argv[0]} JSON_config_file")
         exit(1)
 
     try:
@@ -22,6 +22,9 @@ if __name__ == '__main__':
         periodicFuzzer.start()
 
     except cpf.ConfigPeriodicFuzzerError as config_error:
-        logging.log(logging.ERROR, f'main error: {config_error}')
+        logging.log(logging.ERROR, f"main error: {config_error}")
     except pf.PeriodiFuzzerError as periodic_error:
-        logging.log(logging.ERROR, f'main error: {periodic_error}')
+        logging.log(logging.ERROR, f"main error: {periodic_error}")
+    except KeyboardInterrupt:
+        logging.log(logging.INFO, f"main: keyboard interrupt")
+        periodicFuzzer.stop()
