@@ -38,9 +38,9 @@ class ConfigPeriodicFuzzer():
 
             for config_key in expected_configuration_dict.keys():
                 if config_key not in configuration:
-                    raise ConfigPeriodicFuzzerError(f'missing key {config_key}')
+                    raise ConfigPeriodicFuzzerError(f"missing key {config_key}")
                 if configuration[config_key] is None and expected_configuration_dict[config_key]['defaultValue'] is None:
-                    raise ConfigPeriodicFuzzerError(f'value for key {config_key} needs to be specified')
+                    raise ConfigPeriodicFuzzerError(f"value for key {config_key} needs to be specified")
 
                 if configuration[config_key] is None:
                     self._configuration[config_key] = expected_configuration_dict[config_key]['defaultValue']
@@ -50,7 +50,7 @@ class ConfigPeriodicFuzzer():
         except json.JSONDecodeError as json_error:
             raise ConfigPeriodicFuzzerError('error parsing JSON file')
         except ValueError as val_error:
-            raise ConfigPeriodicFuzzerError(f'invalid JSON value for key {config_key}')
+            raise ConfigPeriodicFuzzerError(f"invalid JSON value for key {config_key}")
 
     def getConfiguration(self):
         return self._configuration
