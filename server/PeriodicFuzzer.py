@@ -131,10 +131,10 @@ class PeriodicFuzzer():
             for dir_path, dir_names, file_names in os.walk(old_inputs_dir):
                 for file_name in file_names:
                     src_file_path = dir_path + '/' + file_name
-                    dest_file_path = self._flags['inputDirPath'] + '/' + file_name
+                    dest_file_path = self._flags['inputsDirPath'] + '/' + file_name
 
-                    with open(src_file_path, 'r') as reader:
-                        with open(dest_file_path, 'w') as writer:
+                    with open(src_file_path, 'rb') as reader:
+                        with open(dest_file_path, 'wb') as writer:
                             writer.write(reader.read())
                             # TODO: chane file mode after writing
 
