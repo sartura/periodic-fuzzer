@@ -25,7 +25,7 @@ class ConfigPeriodicFuzzer():
             'workDirPath': {'defaultValue': '/tmp/ci-fuzz', 'typeTransform': str},
             'gitBranch': {'defaultValue': 'master', 'typeTransform': str},
             'buildScriptPath': {'defaultValue': '/tmp/ci-fuzz/build.sh', 'typeTransform': str},
-            'fuzzBeckend': {'defaultValue': 'AFL', 'typeTransform': str},
+            'fuzzBackend': {'defaultValue': 'AFL', 'typeTransform': str},
             'fuzzTarget': {'defaultValue': None, 'typeTransform': str},
             'updateInterval': {'defaultValue': 300, 'typeTransform': int},
             'numberOfCPUs': {'defaultValue': 1, 'typeTransform': int},

@@ -17,8 +17,8 @@ class PeriodiFuzzerError(Exception):
 
 class PeriodicFuzzer():
     def __init__(self, **kwargs):
-        if self.__supportedFuzzBeckend(kwargs['fuzzBeckend']) == False:
-            raise PeriodiFuzzerError(f"unsuported fuzzing beckend: {kwargs['fuzzBeckend']}")
+        if self.__supportedFuzzBackend(kwargs['fuzzBackend']) == False:
+            raise PeriodiFuzzerError(f"unsuported fuzzing beckend: {kwargs['fuzzBackend']}")
         self._flags = copy.deepcopy(kwargs)
         self._fuzzing_in_process = False
         self._fuzzer_list = []
@@ -30,8 +30,8 @@ class PeriodicFuzzer():
         return str(self._flags)
 
     @staticmethod
-    def __supportedFuzzBeckend(fuzzBeckend):
-        if fuzzBeckend == 'AFL':
+    def __supportedFuzzBackend(fuzzBackend):
+        if fuzzBackend == 'AFL':
             return True
         else:
             return False
