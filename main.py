@@ -28,4 +28,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         logging.log(logging.INFO, f"main: keyboard interrupt")
 
-    periodicFuzzer.stop()
+    try:
+        periodicFuzzer.stop()
+    except pf.PeriodiFuzzerError as periodic_error:
+        logging.log(logging.ERROR, f"main error: {periodic_error}")
