@@ -1,0 +1,13 @@
+{
+    "gitURL": "https://github.com/CESNET/libyang",
+    "inputsDirPath": "/tmp/ci-fuzz/inputs",
+    "clonePath": "/tmp/ci-fuzz/libyang",
+    "workDirPath": null,
+    "gitBranch": "libyang2",
+    "buildScriptPath": null,
+    "fuzzBackend": null,
+    "fuzzTarget": "build/tests/fuzz/lyd_parse_mem",
+    "updateInterval": 300,
+    "numberOfCPUs": 1,
+    "debug": null
+}
