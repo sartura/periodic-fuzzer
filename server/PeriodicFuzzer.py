@@ -67,8 +67,7 @@ class PeriodicFuzzer():
             with open(scpirt_dest_path, 'w') as writer:
                 writer.write(reader.read())
 
-        st = os.stat(scpirt_dest_path)
-        os.chmod(scpirt_dest_path, st.st_mode | stat.S_IEXEC)
+        os.chmod(scpirt_dest_path, stat.S_IREAD | stat.S_IWRITE | stat.S_IEXEC | stat.S_IRGRP | stat.S_IROTH)
 
         build_process = sp.Popen(scpirt_dest_path, cwd=self._flags['clonePath'],
                                  stdout=sys.stdout if self._flags['debug'] else sp.DEVNULL,
@@ -136,7 +135,8 @@ class PeriodicFuzzer():
                     with open(src_file_path, 'rb') as reader:
                         with open(dest_file_path, 'wb') as writer:
                             writer.write(reader.read())
-                            # TODO: chane file mode after writing
+
+                    os.chmod(dest_file_path, stat.S_IREAD | stat.S_IWRITE | stat.S_IRGRP | stat.S_IROTH)
 
     def start(self):
         logging.log(logging.INFO, f"Staring periodic fuzzing server")
