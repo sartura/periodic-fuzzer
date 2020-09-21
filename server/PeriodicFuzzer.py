@@ -80,7 +80,6 @@ class PeriodicFuzzer():
         if self._fuzzing_in_process:
             return
 
-        self._fuzzing_in_process = True
         logging.log(logging.INFO, f"Starting up fuzzing {self._flags['clonePath']}")
 
         fuzz_used = 'afl-fuzz'
@@ -102,6 +101,8 @@ class PeriodicFuzzer():
                                     stdout=sys.stdout if self._flags['debug'] else sp.DEVNULL,
                                     stderr=sys.stderr if self._flags['debug'] else sp.DEVNULL)
             self._fuzzer_list.insert(i, fuzz_process)
+
+        self._fuzzing_in_process = True
 
     def __stopFuzzing(self):
         if self._fuzzing_in_process == False:
