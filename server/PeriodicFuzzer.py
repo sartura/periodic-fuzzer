@@ -3,6 +3,7 @@ import logging
 import subprocess as sp
 import threading as th
 import git
+import sys
 import os
 import stat
 import signal
@@ -69,7 +70,9 @@ class PeriodicFuzzer():
         st = os.stat(scpirt_dest_path)
         os.chmod(scpirt_dest_path, st.st_mode | stat.S_IEXEC)
 
-        build_process = sp.Popen(scpirt_dest_path, cwd=self._flags['clonePath'])
+        build_process = sp.Popen(scpirt_dest_path, cwd=self._flags['clonePath'],
+                                 stdout=sys.stdout if self._flags['debug'] else sp.DEVNULL,
+                                 stderr=sys.stderr if self._flags['debug'] else sp.DEVNULL)
         build_process.wait()
         if build_process.returncode != 0:
             raise PeriodiFuzzerError(f"Script {scpirt_dest_path} error: {build_process.returncode}")
@@ -95,19 +98,23 @@ class PeriodicFuzzer():
 
             logging.log(logging.INFO, f"Starting fuzzer with ID {i}")
 
-            fuzz_process = sp.Popen([fuzz_path, '-i', inputs, '-o', output_path, fuzz_type, fuzzer_name, '--', command], cwd=self._flags['workDirPath'])
-            self._fuzzer_list[i] = fuzz_process
+            fuzz_process = sp.Popen([fuzz_path, '-i', inputs, '-o', output_path, fuzz_type, fuzz_name, '--', command],
+                                    cwd=self._flags['workDirPath'],
+                                    stdout=sys.stdout if self._flags['debug'] else sp.DEVNULL,
+                                    stderr=sys.stderr if self._flags['debug'] else sp.DEVNULL)
+            self._fuzzer_list.insert(i, fuzz_process)
 
     def __stopFuzzing(self):
         if self._fuzzing_in_process == False:
             return
 
         logging.log(logging.INFO, f"Stopping fuzzing")
-        self._fuzzing_in_process = False
 
         for fuzz_proccess in self._fuzzer_list:
             fuzz_proccess.send_signal(signal.SIGINT)
-        self._fuzzer_list = []
+
+        self._fuzzer_list.clear()
+        self._fuzzing_in_process = False
 
         self.__syncInputs()
 
@@ -117,7 +124,7 @@ class PeriodicFuzzer():
 
         for i in range(self._flags['numberOfCPUs']):
             logging.log(logging.INFO, f"Syncing inpout from old fuzzer with ID {i}")
-            old_inputs_dir = self._flags['workDirPath'] + 'output/fuzzer' + str(i) + '/queue'
+            old_inputs_dir = self._flags['workDirPath'] + '/output/fuzzer' + str(i) + '/queue'
             if os.path.exists(old_inputs_dir) == False:
                 raise PeriodiFuzzerError(f"directory {old_inputs_dir} doesn't exist")
 
@@ -140,9 +147,12 @@ class PeriodicFuzzer():
                 is_updated = self.__update()
                 if is_updated and self._fuzzing_in_process:
                     self.__stopFuzzing()
+                    self.__build()
+                    self.__fuzz()
+                if self._fuzzing_in_process == False:
+                    self.__build()
+                    self.__fuzz()
 
-                self.__build()
-                self.__fuzz()
                 repeating_timer.wait(self._flags['updateInterval'])
 
             except git.InvalidGitRepositoryError as git_error:
