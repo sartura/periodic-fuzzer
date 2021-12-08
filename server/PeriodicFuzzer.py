@@ -82,10 +82,19 @@ class PeriodicFuzzer():
 
         logging.log(logging.INFO, f"Starting up fuzzing {self._flags['clonePath']}")
 
-        fuzz_used = 'afl-fuzz'
-        fuzz_path = shutil.which(fuzz_used)
+        fuzz_used = self._flags['fuzzBackend']
+
+        if fuzz_used == 'AFL':
+            self.__fuzz_afl()
+        elif fuzz_used == 'yang-imp-fuzzer':
+            self.__fuzz_yang_imp()
+
+        self._fuzzing_in_process = True
+
+    def __fuzz_afl(self):
+        fuzz_path = shutil.which('afl-fuzz')
         if fuzz_path is None:
-            raise PeriodiFuzzerError(f"Couldn't find {fuzz_used}")
+            raise PeriodiFuzzerError(f"Couldn't find afl-fuzz")
 
         for i in range(self._flags['numberOfCPUs']):
             inputs = self._flags['inputsDirPath']
@@ -93,16 +102,32 @@ class PeriodicFuzzer():
             output_path = self._flags['workDirPath'] + '/output'
             command = self._flags['clonePath'] + '/' + self._flags['fuzzTarget']
             fuzz_name = 'fuzzer' + str(i)
+            flags = self._flags['fuzzFlags']
 
             logging.log(logging.INFO, f"Starting fuzzer with ID {i}")
 
-            fuzz_process = sp.Popen([fuzz_path, '-i', inputs, '-o', output_path, fuzz_type, fuzz_name, '--', command],
+            fuzz_process = sp.Popen([fuzz_path, '-i', inputs, '-o', output_path, fuzz_type, fuzz_name, flags, '--', command],
                                     cwd=self._flags['workDirPath'],
                                     stdout=sys.stdout if self._flags['debug'] else sp.DEVNULL,
                                     stderr=sys.stderr if self._flags['debug'] else sp.DEVNULL)
             self._fuzzer_list.insert(i, fuzz_process)
 
-        self._fuzzing_in_process = True
+    def __fuzz_yang_imp(self):
+        fuzz_path = shutil.which('yang-imp-fuzzer')
+        if fuzz_path is None:
+            raise PeriodiFuzzerError(f"Couldn't find yang-imp-fuzzer")
+
+        for i in range(self._flags['numberOfCPUs']):
+            output_path = self._flags['workDirPath'] + '/output'
+            flags = self._flags['fuzzFlags']
+
+            logging.log(logging.INFO, f"Starting fuzzer with ID {i}")
+            fuzz_process = sp.Popen([fuzz_path, flags],
+                                    cwd=self._flags['workDirPath'],
+                                    stdout=sys.stdout if self._flags['debug'] else sp.DEVNULL,
+                                    stderr=sys.stderr if self._flags['debug'] else sp.DEVNULL)
+            self._fuzzer_list.insert(i, fuzz_process)
+
 
     def __stopFuzzing(self):
         if self._fuzzing_in_process == False:
